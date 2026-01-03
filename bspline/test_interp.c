@@ -111,6 +111,7 @@ test_interp (void)
     double data_dy[6] = {  0.000000000000e+00, -3.698224852071e-01, -5.945303210464e-01,
                           -6.487889273356e-01, -5.948839976205e-01, -5.000000000000e-01 };
 
+    test_interp_eps(6, 1, GSL_DBL_EPSILON, data_x, data_y, "1/(1+x^2) interpolation");
     test_interp_eps(6, 2, GSL_DBL_EPSILON, data_x, data_y, "1/(1+x^2) interpolation");
     test_interp_eps(6, 3, GSL_DBL_EPSILON, data_x, data_y, "1/(1+x^2) interpolation");
     test_interp_eps(6, 4, 10.0 * GSL_DBL_EPSILON, data_x, data_y, "1/(1+x^2) interpolation");
@@ -126,6 +127,7 @@ test_interp (void)
                             0.40514493733644485, -0.21595209836959839, 0.47405586764216423,
                             0.46561462432146072 };
 
+    test_interp_eps(7, 1, GSL_DBL_EPSILON, data_x, data_y, "random interpolation");
     test_interp_eps(7, 2, GSL_DBL_EPSILON, data_x, data_y, "random interpolation");
     test_interp_eps(7, 3, 1.0e1 * GSL_DBL_EPSILON, data_x, data_y, "random interpolation");
     test_interp_eps(7, 4, 1.0e2 * GSL_DBL_EPSILON, data_x, data_y, "random interpolation");

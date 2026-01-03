@@ -237,7 +237,10 @@ gsl_bspline_col_interp(const gsl_vector * tau,
               GSL_ERROR("runtime error - most likely invalid knot vector", GSL_FAILURE);
             }
 
-          v = gsl_vector_view_array_with_stride(ptr, XB->tda - 1, w->spline_order);
+          if (XB->tda > 1)
+            v = gsl_vector_view_array_with_stride(ptr, XB->tda - 1, w->spline_order);
+          else
+            v = gsl_vector_view_array(ptr, w->spline_order);
 
           status = gsl_bspline_basis (taui, &v.vector, &istart, w);
           if (status)

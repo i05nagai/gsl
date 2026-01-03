@@ -1,5 +1,7 @@
 * What is new in gsl-2.9:
 
+** bug fix in collocation matrix for order-1 interpolating B-splines
+
 * What was new in gsl-2.8:
 
 ** apply patch for bug #63679 (F. Weimer)
