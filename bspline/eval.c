@@ -526,10 +526,20 @@ bspline_process_interval_for_eval (const double x, size_t * i, const int flag,
         }
     }
 
-  if (gsl_vector_get (w->knots, *i) == gsl_vector_get (w->knots, *i + 1))
-    {
-      GSL_ERROR ("knot(i) = knot(i+1) will result in division by zero", GSL_EINVAL);
-    }
+  {
+    double ki = gsl_vector_get(w->knots, *i);
+    double kip1 = gsl_vector_get(w->knots, *i + 1);
+
+    /*
+     * for an order 1 interpolating spline with 1 control point,
+     * gsl_bspline_init_interp() will produce the knot vector { x1, x1 },
+     * so we need to exclude this case from the test below
+     */
+    if (!(w->spline_order == 1 && w->ncontrol == 1) && (ki == kip1))
+      {
+        GSL_ERROR ("knot(i) = knot(i+1) will result in division by zero", GSL_EINVAL);
+      }
+  }
 
   return GSL_SUCCESS;
 }
