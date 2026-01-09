@@ -55,6 +55,8 @@ int gsl_sf_alf_deriv_array(const size_t lmax, const size_t mmax, const double x,
                            double result_array[], double result_deriv_array[]);
 int gsl_sf_alf_vsh_array(const size_t lmax, const size_t mmax, const double x,
                          double result_array[], double result_deriv_array[]);
+int gsl_sf_alf_theta_derivk_array(const size_t lmax, const double Plm[],
+                                  const double input_array[], double output_array[]);
 
 INLINE_DECL size_t gsl_sf_alf_nlm(const size_t lmax, const size_t mmax);
 INLINE_DECL size_t gsl_sf_alf_array_index(const size_t l, const size_t m, const size_t lmax);

@@ -411,16 +411,41 @@ The corresponding formulas for a normalized ALF $T_l^m(\cos{\theta})$ are
 \sqrt{(l+m+1)(l-m)} \frac{A_l^m}{A_l^{m+1}} \frac{d^{k-1}}{d\theta^{k-1}} T_l^{m+1}(\cos{\theta})
 \right], & \qquad l \geq 1, m > 0 \label{eqn:DR3}
 \end{alignat}
+A general ALF $T_l^m(\cos{\theta})$ (normalized or unnormalized) will then obey,
+\begin{alignat}{3}
+\frac{d^k}{d\theta^k} T_0^0(\cos{\theta}) &= 0 \\
+\frac{d^k}{d\theta^k} T_l^0(\cos{\theta}) &= -\eta_{CS} e_l \frac{d^{k-1}}{d\theta^{k-1}} T_l^1(\cos{\theta}), & \qquad l \geq 1 \\
+\frac{d^k}{d\theta^k} T_l^m(\cos{\theta}) &= \eta_{CS} \left[ f_l^m \frac{d^{k-1}}{d\theta^{k-1}} T_l^{m-1}(\cos{\theta}) - g_l^m \frac{d^{k-1}}{d\theta^{k-1}} T_l^{m+1}(\cos{\theta}) \right], & \qquad l \geq 1, m > 0
+\end{alignat}
+with (for normalized ALFs)
+\begin{subequations}
+\begin{alignat}{3}
+e_l &= \frac{A_l^0}{A_l^1} \sqrt{l(l+1)}, & \qquad l \geq 1 \\
+f_l^m &= \frac{1}{2} \sqrt{(l+m)(l-m+1)} \frac{A_l^m}{A_l^{m-1}}, & \qquad l \geq 1, m > 0 \\
+g_l^m &= \frac{1}{2} \sqrt{(l+m+1)(l-m)} \frac{A_l^m}{A_l^{m+1}}, & \qquad l \geq 1, m > 0
+\end{alignat}
+\end{subequations}
 These equations can be applied recursively to find any derivative order
-$k$. GSL provides routines to calculate up to the second derivative
-($k=2$). First, the ALFs are computed using the recurrence relations
-described in Sec.~\ref{sec:recur}. The first derivatives with respect
-to $\theta$ are then calculated using the relations above. Optionally,
-the second derivatives with respect to $\theta$ are calculated by
-applying the above relations again to the computed first derivatives.
-Eqs.~\eqref{eqn:DR2}-\eqref{eqn:DR3} contain coefficients which are
-square roots of integers. In order to optimize the calculation, these
-square root factors are calculated in the precomputing step.
+$k$. The factors $e_l,f_l^m,g_l^m$ are computed and stored in the precomputing step.
+These factors are given in Table~\ref{tab:recurrence2} for the different normalizations.
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{Coefficients of recursive derivative recurrence relations.}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Normalization & Notation & $e_l$ & $f_l^m$ & $g_l^m$ \\
+\midrule
+Unnormalized & $P_l^m(x)$ & $1$ & $\frac{1}{2}(l+m)(l-m+1)$ & $\frac{1}{2}$ \\
+Schmidt & $S_l^m(x)$ & $\sqrt{\frac{l(l+1)}{2}}$ & $\left\{ \begin{array}{cc} \frac{\sqrt{2}}{2} \sqrt{(l+m)(l-m+1)} & m = 1 \\ \frac{1}{2} \sqrt{(l+m)(l-m+1)} & m > 1 \end{array} \right.$ & $\frac{1}{2} \sqrt{(l+m+1)(l-m)}$ \\
+Spherical Harmonic & $Y_l^m(x)$ & $\sqrt{l(l+1)}$ & $\frac{1}{2} \sqrt{(l+m)(l-m+1)}$ & $\frac{1}{2} \sqrt{(l+m+1)(l-m)}$ \\
+Full & $N_l^m(x)$ & $\sqrt{l(l+1)}$ & $\frac{1}{2} \sqrt{(l+m)(l-m+1)}$ & $\frac{1}{2} \sqrt{(l+m+1)(l-m)}$ \\
+$4\pi$ & $R_l^m(x)$ & $\sqrt{2l(l+1)}$ & $\left\{ \begin{array}{cc} \frac{\sqrt{2}}{2} \sqrt{(l+m)(l-m+1)} & m = 1 \\ \frac{1}{2} \sqrt{(l+m)(l-m+1)} & m > 1 \end{array} \right.$ & $\frac{1}{2} \sqrt{(l+m+1)(l-m)}$ \\
+\bottomrule
+\end{tabular}
+\label{tab:recurrence2}
+\end{table}
 
 \section{Implementation Details}
 

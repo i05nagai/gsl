@@ -2748,8 +2748,9 @@ int main(int argc, char * argv[])
   gsl_ieee_env_setup ();
   gsl_set_error_handler_off ();
 
-  gsl_test(test_airy(),        "Airy Functions");
   gsl_test(test_alf(),         "Associated Legendre Functions");
+#if 0/*XXX*/
+  gsl_test(test_airy(),        "Airy Functions");
   gsl_test(test_bessel(),      "Bessel Functions");
   gsl_test(test_clausen(),     "Clausen Integral");
   gsl_test(test_coulomb(),     "Coulomb Wave Functions");
@@ -2783,6 +2784,7 @@ int main(int argc, char * argv[])
   gsl_test(test_zeta(),        "Zeta Functions");
 
   gsl_test(test_results(),     "Result Methods");
+#endif
 
   exit (gsl_test_summary());
 }

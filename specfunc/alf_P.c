@@ -22,6 +22,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_alf.h>
+#include <assert.h>/*XXX*/
 
 /*
  * The routines in this module compute associated Legendre functions
@@ -65,7 +66,9 @@ alm:   length nlm
 blm:   length nlm
 cl:    length lmax+1
 dl:    length lmax+1
-sqrts: length 2*lmax+2
+el:    length lmax+1
+flm:   length nlm
+glm:   length nlm
 
 Special storage:
 
@@ -76,6 +79,7 @@ b(0,0) = alm[2*idx(0,0)+1 = 1]         = unused
 b(1,0) = alm[2*idx(1,0)+1 = 3]         = unused
 b(1,1) = alm[2*idx(1,1)+1 = 2*(L+1)+1] = unused
 dl[0]                                  = csfac
+el[0]                                  = unused
 */
 
 int
@@ -93,12 +97,9 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
       double * alm = &output_array[nlm]; /* save nlm entries for the ALFs */
       double * cl = alm + 2 * nlm;
       double * dl = cl + lmax + 1;
-      double * sqrts = dl + lmax + 1;
+      double * el = dl + lmax + 1;
+      double * flm = el + lmax + 1;
       size_t l, m, k;
-
-      /* compute square root factors */
-      for (l = 0; l <= 2 * lmax + 1; ++l)
-        sqrts[l] = sqrt((double) l);
 
       /* store csfac in dl[0] which is not needed in the recurrence relations */
       dl[0] = csfac;
@@ -113,6 +114,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           cl[1] = M_SQRT3;
           dl[1] = csfac;
+          el[1] = 1.0;
 
           /* m = 0 terms */
           k = 2; /* idx(2,0) */
@@ -137,11 +139,29 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
               for (l = m + 2; l <= lmax; ++l)
                 {
                   /* a_l^m */
-                  alm[2*k] = ((2.0*l - 1.0) / sqrts[l + m]) / sqrts[l - m];
+                  alm[2*k] = ((2.0*l - 1.0) / sqrt((double) (l + m))) / sqrt((double) (l - m));
 
                   /* b_l^m */
-                  alm[2*k + 1] = -(sqrts[l + m - 1] / sqrts[l + m]) *
-                                  (sqrts[l - m - 1] / sqrts[l - m]);
+                  alm[2*k + 1] = -(sqrt((double) (l + m - 1)) / sqrt((double) (l + m))) *
+                                  (sqrt((double) (l - m - 1)) / sqrt((double) (l - m)));
+
+                  ++k;
+                }
+            }
+
+          /* m>0 terms for flm/glm */
+          k = lmax + 1; /* idx(1,1) */
+          for (m = 1; m <= mmax; ++m)
+            {
+              double flm_fac = (m == 1) ? M_SQRT2 : 1.0;
+
+              for (l = m; l <= lmax; ++l)
+                {
+                  /* f_l^m */
+                  flm[2*k] = 0.5 * flm_fac * sqrt((l+m)*(l-m+1.0));
+
+                  /* g_l^m */
+                  flm[2*k+1] = 0.5 * sqrt((l+m+1.0)*(l-m));
 
                   ++k;
                 }
@@ -149,8 +169,9 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           for (l = 2; l <= lmax; ++l)
             {
-              cl[l] = sqrts[2 * l + 1];
+              cl[l] = sqrt(2.0 * l + 1.0);
               dl[l] = csfac * sqrt(1.0 - 0.5 / l);
+              el[l] = sqrt(0.5*l*(l+1.0));
             }
         }
       else if (norm == GSL_SF_ALF_FOURPI)
@@ -163,6 +184,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           cl[1] = 2.236067977499789696409174; /* sqrt(5) */
           dl[1] = csfac * M_SQRT3;
+          el[1] = 2.0;
 
           k = 2; /* idx(2,0) */
           for (m = 0; m <= mmax; ++m)
@@ -176,13 +198,31 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
               for (l = m + 2; l <= lmax; ++l)
                 {
                   /* a_l^m */
-                  alm[2*k] = (sqrts[2 * l + 1] / sqrts[l + m]) *
-                             (sqrts[2 * l - 1] / sqrts[l - m]);
+                  alm[2*k] = (sqrt(2.0 * l + 1.0) / sqrt((double) (l + m))) *
+                             (sqrt(2.0 * l - 1.0) / sqrt((double) (l - m)));
 
                   /* b_l^m */
-                  alm[2*k + 1] = -(sqrts[l + m - 1] / sqrts[l + m]) *
-                                  (sqrts[l - m - 1] / sqrts[l - m]) *
-                                  (sqrts[2*l + 1] / sqrts[2*l - 3]);
+                  alm[2*k + 1] = -(sqrt(l + m - 1.0) / sqrt((double) (l + m))) *
+                                  (sqrt(l - m - 1.0) / sqrt((double) (l - m))) *
+                                  (sqrt(2.0*l + 1.0) / sqrt(2.0*l - 3.0));
+
+                  ++k;
+                }
+            }
+
+          /* m>0 terms for flm/glm */
+          k = lmax + 1; /* idx(1,1) */
+          for (m = 1; m <= mmax; ++m)
+            {
+              double flm_fac = (m == 1) ? M_SQRT2 : 1.0;
+
+              for (l = m; l <= lmax; ++l)
+                {
+                  /* f_l^m */
+                  flm[2*k] = 0.5 * flm_fac * sqrt((l+m)*(l-m+1.0));
+
+                  /* g_l^m */
+                  flm[2*k+1] = 0.5 * sqrt((l+m+1.0)*(l-m));
 
                   ++k;
                 }
@@ -192,6 +232,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
             {
               cl[l] = sqrt(2.0 * l + 3.0);
               dl[l] = csfac * sqrt(1.0 + 0.5 / l);
+              el[l] = sqrt(2.0*l*(l+1.0));
             }
         }
       else if (norm == GSL_SF_ALF_SPHARM)
@@ -204,6 +245,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           cl[1] = sqrt(5.0);
           dl[1] = csfac * (M_SQRT3 / M_SQRT2);
+          el[1] = M_SQRT2;
 
           k = 2; /* idx(2,0) */
           for (m = 0; m <= mmax; ++m)
@@ -217,13 +259,29 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
               for (l = m + 2; l <= lmax; ++l)
                 {
                   /* a_l^m */
-                  alm[2*k] = (sqrts[2 * l + 1] / sqrts[l + m]) *
-                             (sqrts[2 * l - 1] / sqrts[l - m]);
+                  alm[2*k] = (sqrt(2.0 * l + 1.0) / sqrt((double) (l + m))) *
+                             (sqrt(2.0 * l - 1.0) / sqrt((double) (l - m)));
 
                   /* b_l^m */
-                  alm[2*k + 1] = -(sqrts[l + m - 1] / sqrts[l + m]) *
-                                  (sqrts[l - m - 1] / sqrts[l - m]) *
-                                  (sqrts[2*l + 1] / sqrts[2*l - 3]);
+                  alm[2*k + 1] = -(sqrt(l + m - 1.0) / sqrt((double) (l + m))) *
+                                  (sqrt(l - m - 1.0) / sqrt((double) (l - m))) *
+                                  (sqrt(2.0*l + 1.0) / sqrt(2.0*l - 3.0));
+
+                  ++k;
+                }
+            }
+
+          /* m>0 terms for flm/glm */
+          k = lmax + 1; /* idx(1,1) */
+          for (m = 1; m <= mmax; ++m)
+            {
+              for (l = m; l <= lmax; ++l)
+                {
+                  /* f_l^m */
+                  flm[2*k] = 0.5 * sqrt((l+m)*(l-m+1.0));
+
+                  /* g_l^m */
+                  flm[2*k+1] = 0.5 * sqrt((l+m+1.0)*(l-m));
 
                   ++k;
                 }
@@ -233,6 +291,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
             {
               cl[l] = sqrt(2.0 * l + 3.0);
               dl[l] = csfac * sqrt(1.0 + 0.5 / l);
+              el[l] = sqrt(l*(l+1.0));
             }
         }
       else if (norm == GSL_SF_ALF_FULL)
@@ -245,6 +304,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           cl[1] = sqrt(5.0);
           dl[1] = csfac * (M_SQRT3 / M_SQRT2);
+          el[1] = M_SQRT2;
 
           k = 2; /* idx(2,0) */
           for (m = 0; m <= mmax; ++m)
@@ -258,13 +318,29 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
               for (l = m + 2; l <= lmax; ++l)
                 {
                   /* a_l^m */
-                  alm[2*k] = (sqrts[2 * l + 1] / sqrts[l + m]) *
-                             (sqrts[2 * l - 1] / sqrts[l - m]);
+                  alm[2*k] = (sqrt(2.0 * l + 1.0) / sqrt((double) (l + m))) *
+                             (sqrt(2.0 * l - 1.0) / sqrt((double) (l - m)));
 
                   /* b_l^m */
-                  alm[2*k + 1] = -(sqrts[l + m - 1] / sqrts[l + m]) *
-                                  (sqrts[l - m - 1] / sqrts[l - m]) *
-                                  (sqrts[2*l + 1] / sqrts[2*l - 3]);
+                  alm[2*k + 1] = -(sqrt(l + m - 1.0) / sqrt((double) (l + m))) *
+                                  (sqrt(l - m - 1.0) / sqrt((double) (l - m))) *
+                                  (sqrt(2.0*l + 1.0) / sqrt(2.0*l - 3.0));
+
+                  ++k;
+                }
+            }
+
+          /* m>0 terms for flm/glm */
+          k = lmax + 1; /* idx(1,1) */
+          for (m = 1; m <= mmax; ++m)
+            {
+              for (l = m; l <= lmax; ++l)
+                {
+                  /* f_l^m */
+                  flm[2*k] = 0.5 * sqrt((l+m)*(l-m+1.0));
+
+                  /* g_l^m */
+                  flm[2*k+1] = 0.5 * sqrt((l+m+1.0)*(l-m));
 
                   ++k;
                 }
@@ -274,6 +350,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
             {
               cl[l] = sqrt(2.0 * l + 3.0);
               dl[l] = csfac * sqrt(1.0 + 0.5 / l);
+              el[l] = sqrt(l*(l+1.0));
             }
         }
       else if (norm == GSL_SF_ALF_NONE)
@@ -286,6 +363,7 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 
           cl[1] = 3.0;
           dl[1] = csfac;
+          el[1] = 1.0;
 
           k = 2; /* idx(2,0) */
           for (m = 0; m <= mmax; ++m)
@@ -308,10 +386,27 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
                 }
             }
 
+          /* m>0 terms for flm/glm */
+          k = lmax + 1; /* idx(1,1) */
+          for (m = 1; m <= mmax; ++m)
+            {
+              for (l = m; l <= lmax; ++l)
+                {
+                  /* f_l^m */
+                  flm[2*k] = 0.5*(l+m)*(l-m+1.0);
+
+                  /* g_l^m */
+                  flm[2*k+1] = 0.5;
+
+                  ++k;
+                }
+            }
+
           for (l = 2; l <= lmax; ++l)
             {
               cl[l] = 2.0 * l + 1.0;
               dl[l] = csfac * (2.0 * l - 1.0);
+              el[l] = 1.0;
             }
         }
       else
@@ -327,12 +422,14 @@ gsl_sf_alf_precompute(const gsl_sf_alf_t norm, const size_t lmax,
 gsl_sf_alf_array_size()
   Compute total size of array needed for array functions
 
-size = nlm +     // for ALFs
-       nlm +     // for alm factors
-       nlm +     // for blm factors
-       lmax+1    // for cl factors
-       lmax+1    // for dl factors
-       2*lmax+2  // for sqrt factors
+size = nlm    +  // for ALFs
+       nlm    +  // for alm factors
+       nlm    +  // for blm factors
+       lmax+1 +  // for cl factors
+       lmax+1 +  // for dl factors
+       lmax+1 +  // for el factors
+       nlm    +  // for flm factors
+       nlm       // for glm factors
 
 Inputs: lmax - maximum degree
 */
@@ -341,7 +438,7 @@ size_t
 gsl_sf_alf_array_size(const size_t lmax, const size_t mmax)
 {
   const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
-  const size_t size = 3 * nlm + 4 * (lmax + 1);
+  const size_t size = 5 * nlm + 3 * (lmax + 1);
   return size;
 }
 
@@ -795,6 +892,81 @@ gsl_sf_alf_vsh_array(const size_t lmax, const size_t mmax, const double x,
 
       return GSL_SUCCESS;
     }
+}
+
+/*
+gsl_sf_alf_theta_derivk_array()
+  Compute the kth derivative of Plm(x) with respect to theta
+using Eq. 14 of [2]
+
+Inputs: lmax         - maximum degree and order
+        Plm          - array initialized by gsl_sf_alf_precompute()
+        input_array  - (input) array of d^{k-1}/dtheta^{k-1} Plm(x), length nlm
+        output_array - (output) d^k/dtheta^k Plm(x), length nlm
+
+Notes:
+1) Plm can equal input_array to calculate first derivatives
+2) input_array must be computed using lmax == mmax, since all degrees and orders
+are required to compute the derivatives
+*/
+
+int
+gsl_sf_alf_theta_derivk_array(const size_t lmax, const double Plm[],
+                              const double input_array[], double output_array[])
+{
+  const size_t mmax = lmax;
+  const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+  const double * alm = &Plm[nlm];
+  const double * cl = alm + 2 * nlm;
+  const double * dl = cl + lmax + 1;
+  const double * el = dl + lmax + 1;
+  const double * flm = el + lmax + 1;
+  const double csfac = dl[0];
+  size_t l, m, p;
+
+  /* d^k/dtheta^k P(0,0) = 0 */
+  output_array[0] = 0.0;
+
+  if (lmax == 0)
+    return GSL_SUCCESS;
+
+  /* m=0 terms */
+  for (l = 1; l <= lmax; ++l) {
+    assert(lmax+l == gsl_sf_alf_array_index(l,1,lmax));
+    output_array[l] = -csfac * el[l] * input_array[lmax + l];
+  }
+
+  /* 0<m<L terms */
+  p = lmax + 1; /* idx(l,1) */
+  for (m = 1; m <= mmax - 1; ++m)
+    {
+      for (l = m; l <= lmax; ++l)
+        {
+          size_t q = p + m - lmax - 1;
+          size_t t = p + lmax - m;
+
+          assert(p == gsl_sf_alf_array_index(l,m,lmax));
+          assert(q == gsl_sf_alf_array_index(l,m-1,lmax));
+          assert(t == gsl_sf_alf_array_index(l,m+1,lmax));
+
+          output_array[p] = csfac * (flm[2*p]   * input_array[q] -
+                                     flm[2*p+1] * input_array[t]);
+          ++p;
+        }
+    }
+
+  /* m=L terms */
+  p = lmax + 1; /* idx(1,1) */
+  for (l = 1; l <= lmax; ++l)
+    {
+      size_t q = p + l - 1 - lmax;
+      assert(p == gsl_sf_alf_array_index(l,l,lmax));
+      assert(q == gsl_sf_alf_array_index(l,l-1,lmax));
+      output_array[p] = csfac * flm[2*p] * input_array[q];
+      p += lmax + 1 - l;
+    }
+
+  return GSL_SUCCESS;
 }
 
 #if 0

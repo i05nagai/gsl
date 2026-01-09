@@ -1,6 +1,6 @@
 /* specfunc/test_alf.c
  * 
- * Copyright (C) 2023 Patrick Alken
+ * Copyright (C) 2023, 2024, 2025, 2026 Patrick Alken
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,6 +202,7 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   double * d2Plm = malloc(dplm_size * sizeof(double));
   double * Plm_theta = malloc(plm_size * sizeof(double));
   double * dPlm_theta = malloc(dplm_size * sizeof(double));
+  double * d2Plm_theta = malloc(dplm_size * sizeof(double));
   double x, dx;
 
   gsl_sf_alf_precompute(norm, lmax, mmax, 0, Plm);
@@ -298,6 +299,14 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   test_value(lmax, mmax, 3, 1, dPlm_theta, -1.963801854721950, tol, desc, "deriv theta x=0.35");
   test_value(lmax, mmax, 3, 2, dPlm_theta, -1.14736005580474,  tol, desc, "deriv theta x=0.35");
   test_value(lmax, mmax, 3, 3, dPlm_theta,  0.728410894784410, tol, desc, "deriv theta x=0.35");
+
+  if (lmax == mmax)
+    {
+      gsl_sf_alf_theta_derivk_array(lmax, Plm, dPlm_theta, d2Plm_theta);
+      test_value(lmax, mmax, 0, 0, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 1, 0, d2Plm_theta, -0.350000000000000, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 1, 1, d2Plm_theta, -0.936749699759760, tol, desc, "deriv2 theta x=0.35");
+    }
 
   x = 1.0;
   gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm);
@@ -452,15 +461,16 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   free(d2Plm);
   free(Plm_theta);
   free(dPlm_theta);
+  free(d2Plm_theta);
 
   return s;
 }
 
 /* test other normalizations (other than schmidt) */
 static int
-test_legendre_norm(const gsl_sf_alf_t norm, const size_t lmax,
-                   const size_t mmax, const size_t flags,
-                   const char *desc)
+test_alf_norm(const gsl_sf_alf_t norm, const size_t lmax,
+              const size_t mmax, const size_t flags,
+              const char *desc)
 {
   int s = 0;
   const double tol = 1.0e-10;
@@ -535,7 +545,7 @@ test_legendre_norm(const gsl_sf_alf_t norm, const size_t lmax,
 }
 
 /*
-test_legendre_unnorm()
+test_alf_unnorm()
   This routine tests the unnormalized ALFs using the relation
 
 S(l,m)(x) = a(l,m) * P(l,m)(x)
@@ -552,8 +562,8 @@ S(l,m) are the Schmidt semi-normalized ALFs
 */
 
 static int
-test_legendre_unnorm(const size_t lmax_orig, const size_t mmax_orig,
-                     const size_t flags, const char *desc)
+test_alf_unnorm(const size_t lmax_orig, const size_t mmax_orig,
+                const size_t flags, const char *desc)
 {
   int s = 0;
   const double tol = 1.0e-10;
@@ -640,17 +650,17 @@ test_alf_all(const size_t lmax, const size_t mmax)
   s += test_alf_schmidt(lmax, mmax, 0, "schmidt nocsphase");
   s += test_alf_schmidt(lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "schmidt csphase");
 
-  s += test_legendre_norm(GSL_SF_ALF_SPHARM, lmax, mmax, 0, "spharm nocsphase");
-  s += test_legendre_norm(GSL_SF_ALF_SPHARM, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "spharm csphase");
+  s += test_alf_norm(GSL_SF_ALF_SPHARM, lmax, mmax, 0, "spharm nocsphase");
+  s += test_alf_norm(GSL_SF_ALF_SPHARM, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "spharm csphase");
 
-  s += test_legendre_norm(GSL_SF_ALF_FULL, lmax, mmax, 0, "full nocsphase");
-  s += test_legendre_norm(GSL_SF_ALF_FULL, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "full csphase");
+  s += test_alf_norm(GSL_SF_ALF_FULL, lmax, mmax, 0, "full nocsphase");
+  s += test_alf_norm(GSL_SF_ALF_FULL, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "full csphase");
 
-  s += test_legendre_norm(GSL_SF_ALF_FOURPI, lmax, mmax, 0, "fourpi nocsphase");
-  s += test_legendre_norm(GSL_SF_ALF_FOURPI, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "fourpi csphase");
+  s += test_alf_norm(GSL_SF_ALF_FOURPI, lmax, mmax, 0, "fourpi nocsphase");
+  s += test_alf_norm(GSL_SF_ALF_FOURPI, lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "fourpi csphase");
 
-  s += test_legendre_unnorm(lmax, mmax, 0, "unnorm nocsphase");
-  s += test_legendre_unnorm(lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "unnorm csphase");
+  s += test_alf_unnorm(lmax, mmax, 0, "unnorm nocsphase");
+  s += test_alf_unnorm(lmax, mmax, GSL_SF_ALF_FLG_CSPHASE, "unnorm csphase");
 
   return s;
 }
