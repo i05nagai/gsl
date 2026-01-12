@@ -306,41 +306,80 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
       test_value(lmax, mmax, 0, 0, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=0.35");
       test_value(lmax, mmax, 1, 0, d2Plm_theta, -0.350000000000000, tol, desc, "deriv2 theta x=0.35");
       test_value(lmax, mmax, 1, 1, d2Plm_theta, -0.936749699759760, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 2, 0, d2Plm_theta,  2.265000000000000, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 2, 1, d2Plm_theta, -2.271497303542314, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 2, 2, d2Plm_theta, -1.307698359714502, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 3, 0, d2Plm_theta,  4.810312500000000, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 3, 1, d2Plm_theta,  3.147847827844545, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 3, 2, d2Plm_theta, -3.997160874745192, tol, desc, "deriv2 theta x=0.35");
+      test_value(lmax, mmax, 3, 3, d2Plm_theta, -1.405223343986419, tol, desc, "deriv2 theta x=0.35");
     }
 
   x = 1.0;
-  gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm);
+  gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm_theta);
   test_value(lmax, mmax, 0, 0, Plm,  1.000000000000000,  tol, desc, "theta x=1");
   test_value(lmax, mmax, 1, 0, Plm,  1.000000000000000,  tol, desc, "theta x=1");
   test_value(lmax, mmax, 2, 0, Plm,  1.000000000000000,  tol, desc, "theta x=1");
   test_value(lmax, mmax, 3, 0, Plm,  1.000000000000000,  tol, desc, "theta x=1");
-  test_value(lmax, mmax, 0, 0, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 1, 0, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 1, 1, dPlm, 1.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 2, 0, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 2, 1, dPlm, M_SQRT3,            tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 2, 2, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 3, 0, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 3, 1, dPlm, 2.44948974278318,   tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 3, 2, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
-  test_value(lmax, mmax, 3, 3, dPlm, 0.000000000000000,  tol, desc, "deriv theta x=1");
+
+  test_value(lmax, mmax, 0, 0, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 1, 0, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 1, 1, dPlm_theta, 1.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 2, 0, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 2, 1, dPlm_theta, M_SQRT3,            tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 2, 2, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 3, 0, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 3, 1, dPlm_theta, 2.44948974278318,   tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 3, 2, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+  test_value(lmax, mmax, 3, 3, dPlm_theta, 0.000000000000000,  tol, desc, "deriv theta x=1");
+
+  if (lmax == mmax)
+    {
+      gsl_sf_alf_theta_derivk_array(lmax, Plm, dPlm_theta, d2Plm_theta);
+      test_value(lmax, mmax, 0, 0, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 1, 0, d2Plm_theta, -1.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 1, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 2, 0, d2Plm_theta, -3.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 2, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 2, 2, d2Plm_theta,  M_SQRT3,           tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 3, 0, d2Plm_theta, -6.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 3, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 3, 2, d2Plm_theta,  3.872983346207417, tol, desc, "deriv2 theta x=1");
+      test_value(lmax, mmax, 3, 3, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=1");
+    }
 
   x = -1.0;
-  gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm);
+  gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm_theta);
   test_value(lmax, mmax, 0, 0, Plm,   1.000000000000000,  tol, desc, "theta x=-1");
   test_value(lmax, mmax, 1, 0, Plm,  -1.000000000000000,  tol, desc, "theta x=-1");
   test_value(lmax, mmax, 2, 0, Plm,   1.000000000000000,  tol, desc, "theta x=-1");
   test_value(lmax, mmax, 3, 0, Plm,  -1.000000000000000,  tol, desc, "theta x=-1");
-  test_value(lmax, mmax, 0, 0, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 1, 0, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 1, 1, dPlm, -1.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 2, 0, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 2, 1, dPlm,  M_SQRT3,            tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 2, 2, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 3, 0, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 3, 1, dPlm, -2.44948974278318,   tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 3, 2, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
-  test_value(lmax, mmax, 3, 3, dPlm,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+
+  test_value(lmax, mmax, 0, 0, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 1, 0, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 1, 1, dPlm_theta, -1.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 2, 0, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 2, 1, dPlm_theta,  M_SQRT3,            tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 2, 2, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 3, 0, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 3, 1, dPlm_theta, -2.44948974278318,   tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 3, 2, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+  test_value(lmax, mmax, 3, 3, dPlm_theta,  0.000000000000000,  tol, desc, "deriv theta x=-1");
+
+  if (lmax == mmax)
+    {
+      gsl_sf_alf_theta_derivk_array(lmax, Plm, dPlm_theta, d2Plm_theta);
+      test_value(lmax, mmax, 0, 0, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 1, 0, d2Plm_theta,  1.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 1, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 2, 0, d2Plm_theta, -3.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 2, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 2, 2, d2Plm_theta,  M_SQRT3,           tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 3, 0, d2Plm_theta,  6.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 3, 1, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 3, 2, d2Plm_theta, -3.872983346207417, tol, desc, "deriv2 theta x=-1");
+      test_value(lmax, mmax, 3, 3, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
+    }
 
 #if 0
   x = 0.23;

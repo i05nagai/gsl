@@ -22,7 +22,6 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_sf_alf.h>
-#include <assert.h>/*XXX*/
 
 /*
  * The routines in this module compute associated Legendre functions
@@ -914,59 +913,57 @@ int
 gsl_sf_alf_theta_derivk_array(const size_t lmax, const double Plm[],
                               const double input_array[], double output_array[])
 {
-  const size_t mmax = lmax;
-  const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
-  const double * alm = &Plm[nlm];
-  const double * cl = alm + 2 * nlm;
-  const double * dl = cl + lmax + 1;
-  const double * el = dl + lmax + 1;
-  const double * flm = el + lmax + 1;
-  const double csfac = dl[0];
-  size_t l, m, p;
-
-  /* d^k/dtheta^k P(0,0) = 0 */
-  output_array[0] = 0.0;
-
   if (lmax == 0)
-    return GSL_SUCCESS;
-
-  /* m=0 terms */
-  for (l = 1; l <= lmax; ++l) {
-    assert(lmax+l == gsl_sf_alf_array_index(l,1,lmax));
-    output_array[l] = -csfac * el[l] * input_array[lmax + l];
-  }
-
-  /* 0<m<L terms */
-  p = lmax + 1; /* idx(l,1) */
-  for (m = 1; m <= mmax - 1; ++m)
     {
-      for (l = m; l <= lmax; ++l)
+      /* quick return */
+      output_array[0] = 0.0;
+      return GSL_SUCCESS;
+    }
+  else
+    {
+      const size_t mmax = lmax;
+      const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+      const double * alm = &Plm[nlm];
+      const double * cl = alm + 2 * nlm;
+      const double * dl = cl + lmax + 1;
+      const double * el = dl + lmax + 1;
+      const double * flm = el + lmax + 1;
+      const double csfac = dl[0];
+      size_t l, m, p;
+
+      /* d^k/dtheta^k P(0,0) = 0 */
+      output_array[0] = 0.0;
+
+      /* m=0 terms */
+      for (l = 1; l <= lmax; ++l)
+        output_array[l] = -csfac * el[l] * input_array[lmax + l];
+
+      /* 0<m<L terms */
+      p = lmax + 1; /* idx(l,m) */
+      for (m = 1; m <= mmax - 1; ++m)
         {
-          size_t q = p + m - lmax - 1;
-          size_t t = p + lmax - m;
+          for (l = m; l <= lmax; ++l)
+            {
+              size_t q = p + m - lmax - 1; /* idx(l,m-1) */
+              size_t t = p + lmax - m;     /* idx(l,m+1) */
 
-          assert(p == gsl_sf_alf_array_index(l,m,lmax));
-          assert(q == gsl_sf_alf_array_index(l,m-1,lmax));
-          assert(t == gsl_sf_alf_array_index(l,m+1,lmax));
-
-          output_array[p] = csfac * (flm[2*p]   * input_array[q] -
-                                     flm[2*p+1] * input_array[t]);
-          ++p;
+              output_array[p] = csfac * (flm[2*p]   * input_array[q] -
+                                         flm[2*p+1] * input_array[t]);
+              ++p;
+            }
         }
-    }
 
-  /* m=L terms */
-  p = lmax + 1; /* idx(1,1) */
-  for (l = 1; l <= lmax; ++l)
-    {
-      size_t q = p + l - 1 - lmax;
-      assert(p == gsl_sf_alf_array_index(l,l,lmax));
-      assert(q == gsl_sf_alf_array_index(l,l-1,lmax));
-      output_array[p] = csfac * flm[2*p] * input_array[q];
-      p += lmax + 1 - l;
-    }
+      /* m=L terms */
+      p = lmax + 1; /* idx(l,l) starting at l=1 */
+      for (l = 1; l <= lmax; ++l)
+        {
+          size_t q = p + l - 1 - lmax; /* idx(l,l-1) */
+          output_array[p] = csfac * flm[2*p] * input_array[q];
+          p += lmax + 1 - l;
+        }
 
-  return GSL_SUCCESS;
+      return GSL_SUCCESS;
+    }
 }
 
 #if 0
