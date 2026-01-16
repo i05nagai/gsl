@@ -463,11 +463,6 @@ int
 gsl_sf_alf_array(const size_t lmax, const size_t mmax, const double x,
                  double result_array[])
 {
-  const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
-  const double * alm = &result_array[nlm];
-  const double * cl = alm + 2 * nlm;
-  const double * dl = cl + lmax + 1;
-
   if (mmax > lmax)
     {
       GSL_ERROR ("mmax must be <= lmax", GSL_EDOM);
@@ -480,6 +475,10 @@ gsl_sf_alf_array(const size_t lmax, const size_t mmax, const double x,
     {
       /* interior point */
 
+      const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+      const double * alm = &result_array[nlm];
+      const double * cl = alm + 2 * nlm;
+      const double * dl = cl + lmax + 1;
       const double u = sqrt((1.0 - x) * (1.0 + x)); /* sin(theta) */
       const size_t Lp2 = lmax + 2;
       size_t l, m;
@@ -570,14 +569,14 @@ gsl_sf_alf_array(const size_t lmax, const size_t mmax, const double x,
 
 /*
 gsl_sf_alf_deriv_array()
-  Compute array of associated Legendre functions at a
+  Compute array of associated Legendre functions P and derivatives P' at a
 given point x
 
 Inputs: lmax               - maximum degree
         mmax               - maximum order (<= lmax)
         x                  - input point in (-1,1)
         result_array       - (input/output) output array of ALFs
-        result_deriv_array - (input/output) output array of dPlm(x)/dx
+        result_deriv_array - (input/output) output array of d/dx Plm(x)
 
 Notes:
 1) result_array must be of length returned by gsl_sf_alf_array_size()
@@ -585,18 +584,13 @@ and be initialized by gsl_sf_alf_precompute()
 
 2) output arrays are indexed by gsl_sf_alf_array_index(l,m,lmax),
 result_array[index(l,m,lmax)] = Plm(x)
-result_deriv_array[index(l,m,lmax)] = dPlm(x)/dx
+result_deriv_array[index(l,m,lmax)] = d/dx Plm(x)
 */
 
 int
 gsl_sf_alf_deriv_array(const size_t lmax, const size_t mmax, const double x,
                        double result_array[], double result_deriv_array[])
 {
-  const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
-  const double * alm = &result_array[nlm];
-  const double * cl = alm + 2 * nlm;
-  const double * dl = cl + lmax + 1;
-
   if (mmax > lmax)
     {
       GSL_ERROR ("mmax must be <= lmax", GSL_EDOM);
@@ -613,6 +607,10 @@ gsl_sf_alf_deriv_array(const size_t lmax, const size_t mmax, const double x,
     {
       /* interior point */
 
+      const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+      const double * alm = &result_array[nlm];
+      const double * cl = alm + 2 * nlm;
+      const double * dl = cl + lmax + 1;
       const double u = sqrt((1.0 - x) * (1.0 + x)); /* sin(theta) */
       const double ratio = x / u;
       const size_t Lp2 = lmax + 2;
@@ -724,6 +722,185 @@ gsl_sf_alf_deriv_array(const size_t lmax, const size_t mmax, const double x,
 }
 
 /*
+gsl_sf_alf_deriv2_array()
+  Compute array of associated Legendre functions P, 1st derivatives P',
+and second derivatives P'' at a given point x
+
+Inputs: lmax                - maximum degree
+        mmax                - maximum order (<= lmax)
+        x                   - input point in (-1,1)
+        result_array        - (input/output) output array of ALFs
+        result_deriv_array  - (input/output) output array of d/dx Plm(x), size nlm
+        result_deriv2_array - (input/output) output array of d^2/dx^2 Plm(x), size nlm
+
+Notes:
+1) result_array must be of length returned by gsl_sf_alf_array_size()
+and be initialized by gsl_sf_alf_precompute()
+
+2) output arrays are indexed by gsl_sf_alf_array_index(l,m,lmax),
+result_array[index(l,m,lmax)] = Plm(x)
+result_deriv_array[index(l,m,lmax)] = d/dx Plm(x)
+result_deriv2_array[index(l,m,lmax)] = d^2/dx^2 Plm(x)
+*/
+
+int
+gsl_sf_alf_deriv2_array(const size_t lmax, const size_t mmax, const double x,
+                        double result_array[], double result_deriv_array[],
+                        double result_deriv2_array[])
+{
+  if (mmax > lmax)
+    {
+      GSL_ERROR ("mmax must be <= lmax", GSL_EDOM);
+    }
+  else if (x < -1.0 || x > 1.0)
+    {
+      GSL_ERROR ("x is outside [-1,1]", GSL_EDOM);
+    }
+  else if (x == -1.0 || x == 1.0) /* endpoints */
+    {
+      GSL_ERROR ("x cannot equal endpoints", GSL_EDOM);
+    }
+  else
+    {
+      /* interior point */
+
+      const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+      const double * alm = &result_array[nlm];
+      const double * cl = alm + 2 * nlm;
+      const double * dl = cl + lmax + 1;
+      const double u = sqrt((1.0 - x) * (1.0 + x)); /* sin(theta) */
+      const double ratio = x / u;
+      const double uinv3 = 1.0 / u / u / u;
+      const size_t Lp2 = lmax + 2;
+      size_t l, m, k;
+      double plm,      /* P(l,m) */
+             pmm;      /* P(m,m) */
+      double plmp1;    /* P(l+1,m) */
+      double dplm,     /* P'(l,m) */
+             dplmp1,   /* P'(l+1,m) */
+             dpmm;     /* P'(m,m) */
+      double d2plm,    /* P''(l,m) */
+             d2plmp1,  /* P''(l+1,m) */
+             d2pmm;    /* P''(m,m) */
+      size_t idxmm;    /* idx(m,m) */
+      const double *al;
+
+      /* initial values P(0,0) and dP(0,0)/dx */
+      plm = alm[0];                /* P(0,0) */
+      dplm = 0.0;                  /* P'(0,0) */
+      d2plm = 0.0;                 /* P''(0,0) */
+      result_array[0] = plm;
+      result_deriv_array[0] = dplm;
+      result_deriv2_array[0] = d2plm;
+
+      /* check for quick return */
+      if (lmax == 0)
+        return GSL_SUCCESS;
+
+      /* compute P(1,0), P'(1,0), P''(1,0) */
+      plmp1 = cl[0] * x * plm; /* P(1,0) */
+      dplmp1 = cl[0] * plm;    /* P'(1,0) */
+      d2plmp1 = 0.0;           /* P''(1,0) */
+      result_array[1] = plmp1;
+      result_deriv_array[1] = dplmp1;
+      result_deriv2_array[1] = d2plmp1;
+
+      /* compute P(l,0), P'(l,0), P''(l,0), l=2:lmax */
+
+      k = 2; /* idx(2,0) */
+      al = &alm[k << 1];
+      for (l = 2; l < lmax; l += 2)
+        {
+          plm     = (al[0] * x) * plmp1 + al[1] * plm;
+          dplm    = al[0] * (x * dplmp1 + plmp1) + al[1] * dplm;
+          d2plm   = al[0] * (x * d2plmp1 + 2.0 * dplmp1) + al[1] * d2plm;
+
+          plmp1   = (al[2] * x) * plm + al[3] * plmp1;
+          dplmp1  = al[2] * (x * dplm + plm) + al[3] * dplmp1;
+          d2plmp1 = al[2] * (x * d2plm + 2.0 * dplm) + al[3] * d2plmp1;
+
+          result_array[k] = plm;          result_array[k+1] = plmp1;
+          result_deriv_array[k] = dplm;   result_deriv_array[k+1] = dplmp1;
+          result_deriv2_array[k] = d2plm; result_deriv2_array[k+1] = d2plmp1;
+          k += 2; al += 4;
+        }
+
+      if (l == lmax)
+        {
+          result_array[k]        = (al[0] * x) * plmp1 + al[1] * plm;
+          result_deriv_array[k]  = al[0] * (x * dplmp1 + plmp1) + al[1] * dplm;
+          result_deriv2_array[k] = al[0] * (x * d2plmp1 + 2.0 * dplmp1) + al[1] * d2plm;
+        }
+
+      if (mmax == 0)
+        return GSL_SUCCESS;
+
+      /* compute P(m,m), P(m+1,m) and P(l,m) */
+
+      pmm = result_array[0]; /* P(0,0) */
+      dpmm = 0.0;            /* P'(0,0) */
+      d2pmm = 0.0;           /* P''(0,0) */
+      idxmm = 0;             /* idx(0,0) */
+
+      for (m = 1; m <= mmax; ++m)
+        {
+          /* compute P(m,m) = d_m * u * P(m-1,m-1) */
+          idxmm += Lp2 - m; /* idx(m,m) = idx(m-1,m-1) + L + 2 - m */
+          d2pmm = dl[m] * (-uinv3 * pmm - 2.0 * ratio * dpmm + u * d2pmm);
+          dpmm = dl[m] * (-ratio * pmm + u * dpmm);
+          pmm *= dl[m] * u;
+          result_array[idxmm] = pmm;
+          result_deriv_array[idxmm] = dpmm;
+          result_deriv2_array[idxmm] = d2pmm;
+          plm = pmm;
+          dplm = dpmm;
+          d2plm = d2pmm;
+
+          if (m + 1 <= lmax)
+            {
+              /* compute P(m+1,m) = c_m * x * P(m,m) */
+              k = idxmm + 1; /* idx(m+1,m) = idx(m,m) + 1 */
+              plmp1 = (cl[m] * x) * plm;
+              dplmp1 = cl[m] * (pmm + x * dpmm);
+              d2plmp1 = cl[m] * (2.0 * dpmm + x * d2pmm);
+              result_array[k] = plmp1;
+              result_deriv_array[k] = dplmp1;
+              result_deriv2_array[k] = d2plmp1;
+
+              /* compute P(l,m) for l=m+2:lmax */
+              ++k;
+              al = &alm[k << 1];
+              for (l = m + 2; l < lmax; l += 2)
+                {
+                  plm     = (al[0] * x) * plmp1 + al[1] * plm;
+                  dplm    = al[0] * (x * dplmp1 + plmp1) + al[1] * dplm;
+                  d2plm   = al[0] * (x * d2plmp1 + 2.0 * dplmp1) + al[1] * d2plm;
+
+                  plmp1   = (al[2] * x) * plm + al[3] * plmp1;
+                  dplmp1  = al[2] * (x * dplm + plm) + al[3] * dplmp1;
+                  d2plmp1 = al[2] * (x * d2plm + 2.0 * dplm) + al[3] * d2plmp1;
+
+                  result_array[k] = plm; result_array[k + 1] = plmp1;
+                  result_deriv_array[k] = dplm; result_deriv_array[k + 1] = dplmp1;
+                  result_deriv2_array[k] = d2plm; result_deriv2_array[k + 1] = d2plmp1;
+
+                  k += 2; al += 4;
+                }
+
+              if (l == lmax)
+                {
+                  result_array[k]        = (al[0] * x) * plmp1 + al[1] * plm;
+                  result_deriv_array[k]  = al[0] * (x * dplmp1 + plmp1) + al[1] * dplm;
+                  result_deriv2_array[k] = al[0] * (x * d2plmp1 + 2.0 * dplmp1) + al[1] * d2plm;
+                }
+            }
+        }
+
+      return GSL_SUCCESS;
+    }
+}
+
+/*
 gsl_sf_alf_vsh_array()
   Compute array of associated Legendre functions and their
 theta derivatives at a given point x suitable for vector spherical
@@ -752,11 +929,6 @@ int
 gsl_sf_alf_vsh_array(const size_t lmax, const size_t mmax, const double x,
                      double result_array[], double result_deriv_array[])
 {
-  const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
-  const double * alm = &result_array[nlm];
-  const double * cl = alm + 2 * nlm;
-  const double * dl = cl + lmax + 1;
-
   if (mmax > lmax)
     {
       GSL_ERROR ("mmax must be <= lmax", GSL_EDOM);
@@ -767,6 +939,10 @@ gsl_sf_alf_vsh_array(const size_t lmax, const size_t mmax, const double x,
     }
   else
     {
+      const size_t nlm = gsl_sf_alf_nlm(lmax, mmax);
+      const double * alm = &result_array[nlm];
+      const double * cl = alm + 2 * nlm;
+      const double * dl = cl + lmax + 1;
       const double u = sqrt((1.0 - x) * (1.0 + x)); /* sin(theta) */
       const double usq = u * u;
       const size_t Lp1 = lmax + 1;

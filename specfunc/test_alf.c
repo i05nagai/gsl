@@ -24,7 +24,7 @@
 #include "test_sf.h"
 
 static double
-test_legendre_dx(const size_t l)
+test_alf_dx(const size_t l)
 {
   const double dx_max = 0.4;
   double dx;
@@ -35,10 +35,10 @@ test_legendre_dx(const size_t l)
     dx = dx_max;
 
   return dx;
-} /* test_legendre_dx() */
+}
 
 /*
-test_legendre_sum()
+test_alf_sum()
   This routine computes the sum:
 
   Sum_{m=0}^l [P(l,m)(x)]^2
@@ -48,23 +48,22 @@ ALFs for all l.
 */
 
 static double
-test_legendre_sum(const size_t l, double *p)
+test_alf_sum(const size_t lmax, const size_t l, double *p)
 {
   double sum = 0.0;
-  size_t idx;
   size_t m;
 
   for (m = 0; m <= l; ++m)
     {
-      idx = gsl_sf_legendre_array_index(l, m);
+      size_t idx = gsl_sf_alf_array_index(l, m, lmax);
       sum += p[idx] * p[idx];
     }
 
   return sum;
-} /* test_legendre_sum() */
+}
 
 /*
-test_legendre_sum_deriv()
+test_alf_sum_deriv()
   This routine computes the sum:
 
   Sum_{m=0}^l P(l,m)(x) * dP(l,m)/dx
@@ -73,23 +72,22 @@ which should equal 0 in the case of Schmidt normalized ALFs.
 */
 
 static double
-test_legendre_sum_deriv(const int l, double *p, double *dp)
+test_alf_sum_deriv(const size_t lmax, const size_t l, double *p, double *dp)
 {
   double sum = 0.0;
-  size_t idx;
-  int m;
+  size_t m;
 
   for (m = 0; m <= l; ++m)
     {
-      idx = gsl_sf_legendre_array_index(l, m);
+      size_t idx = gsl_sf_alf_array_index(l, m, lmax);
       sum += p[idx] * dp[idx];
     }
 
   return sum;
-} /* test_legendre_sum_deriv() */
+}
 
 /*
-test_legendre_sum_deriv2()
+test_alf_sum_deriv2()
   This routine computes the sum:
 
   Sum_{m=0}^l P(l,m)(x) * dP(l,m)/dx
@@ -98,19 +96,19 @@ which should equal 0 in the case of Schmidt normalized ALFs.
 */
 
 static double
-test_legendre_sum_deriv2(const int l, double *p, double *dp, double *d2p)
+test_alf_sum_deriv2(const size_t lmax, const size_t l, double *p, double *dp, double *d2p)
 {
   double sum = 0.0;
-  int m;
+  size_t m;
 
   for (m = 0; m <= l; ++m)
     {
-      size_t idx = gsl_sf_legendre_array_index(l, m);
+      size_t idx = gsl_sf_alf_array_index(l, m, lmax);
       sum += dp[idx] * dp[idx] + p[idx] * d2p[idx];
     }
 
   return sum;
-} /* test_legendre_sum_deriv2() */
+}
 
 static void
 test_value(const size_t lmax, const size_t mmax, const size_t l, const size_t m,
@@ -199,6 +197,7 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   double * Plm = malloc(plm_size * sizeof(double));
   double * Plm2 = malloc(plm_size * sizeof(double));
   double * dPlm = malloc(dplm_size * sizeof(double));
+  double * dPlm2 = malloc(dplm_size * sizeof(double));
   double * d2Plm = malloc(dplm_size * sizeof(double));
   double * Plm_theta = malloc(plm_size * sizeof(double));
   double * dPlm_theta = malloc(dplm_size * sizeof(double));
@@ -381,18 +380,37 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
       test_value(lmax, mmax, 3, 3, d2Plm_theta,  0.000000000000000, tol, desc, "deriv2 theta x=-1");
     }
 
-#if 0
   x = 0.23;
-  gsl_sf_legendre_deriv2_array(norm, lmax, x, p, dp, d2p);
-  test_value(lmax, 0, 0, d2p, 0.000000000000000, 1.0e-10, desc, "deriv2 x=0.23");
-  test_value(lmax, 1, 0, d2p, 0.000000000000000, 1.0e-10, desc, "deriv2 x=0.23");
-  test_value(lmax, 1, 1, d2p, -1.08494130865644, 1.0e-10, desc, "deriv2 x=0.23");
-  test_value(lmax, 2, 0, d2p, 3.000000000000000, 1.0e-10, desc, "deriv2 x=0.23");
-  test_value(lmax, 2, 1, d2p, -1.25090188696335, 1.0e-10, desc, "deriv2 x=0.23");
-#endif
+  gsl_sf_alf_deriv2_array(lmax, mmax, x, Plm, dPlm, d2Plm);
+  test_value(lmax, mmax, 0, 0, Plm,  1.000000000000000, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 1, 0, Plm,  0.230000000000000, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 1, 1, Plm,  0.973190628808149, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 2, 0, Plm, -0.420650000000000, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 2, 1, Plm,  0.387691591345492, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 2, 2, Plm,  0.820212659924242, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 3, 0, Plm, -3.145825000000000e-01, tol, desc, "deriv2 0th x=0.23");
+  test_value(lmax, mmax, 3, 1, Plm, -4.383249876411621e-01, tol, desc, "deriv2 0th x=0.23");
+
+  test_value(lmax, mmax, 0, 0, dPlm,  0.000000000000000, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 1, 0, dPlm,  1.000000000000000, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 1, 1, dPlm, -0.236336020088559, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 2, 0, dPlm,  0.690000000000000, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 2, 1, dPlm,  1.591466035821657, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 2, 2, dPlm, -0.398371685740842, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 3, 0, dPlm, -1.103250000000000e+00, tol, desc, "deriv2 1st x=0.23");
+  test_value(lmax, mmax, 3, 1, dPlm,  1.477142492313385e+00, tol, desc, "deriv2 1st x=0.23");
+
+  test_value(lmax, mmax, 0, 0, d2Plm,  0.000000000000000, tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 1, 0, d2Plm,  0.000000000000000, tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 1, 1, d2Plm, -1.084941308656443, tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 2, 0, d2Plm,  3.000000000000000, tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 2, 1, d2Plm, -1.250901886963348, tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 2, 2, d2Plm, -M_SQRT3,           tol, desc, "deriv2 2nd x=0.23");
+  test_value(lmax, mmax, 3, 0, d2Plm,  3.450000000000000e+00, tol, desc, "deriv2 2nd x=0.23");
+  /*test_value(lmax, mmax, 3, 1, d2Plm,  3.450000000000000e+00, tol, desc, "deriv2 2nd x=0.23");*/
 
   /* test array routines */
-  dx = test_legendre_dx(lmax);
+  dx = test_alf_dx(lmax);
   gsl_sf_alf_precompute(norm, lmax, mmax, flags, Plm);
   gsl_sf_alf_precompute(norm, lmax, mmax, flags, Plm2);
   gsl_sf_alf_precompute(norm, lmax, mmax, flags, Plm_theta);
@@ -402,7 +420,7 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
     {
       double u = sqrt((1.0 - x) * (1.0 + x));
       size_t idx = 0;
-      size_t m;
+      size_t l, m;
 
       s += gsl_sf_alf_array(lmax, mmax, x, Plm2);
       s += gsl_sf_alf_vsh_array(lmax, mmax, x, Plm_theta, dPlm_theta);
@@ -412,8 +430,6 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
 
       for (m = 0; m <= mmax; ++m)
         {
-          size_t l;
-
           for (l = m; l <= lmax; ++l)
             {
               if (fabs(Plm2[idx]) < GSL_DBL_MIN)
@@ -453,50 +469,64 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
             }
         }
 
-#if 0
-      for (l = 0; l <= lmax; ++l)
+      if (lmax == mmax && x < 1.0 && x > -1.0)
         {
-          double sum = test_legendre_sum_deriv(l, p, dp);
+          for (l = 0; l <= lmax; ++l)
+            {
+              double sum = test_alf_sum_deriv(lmax, l, Plm, dPlm);
 
-          gsl_test_abs(sum, 0.0, 1.0e-10,
-                       "%s deriv l=%zu, x=%f, sum=%.12e", desc, l, x, sum);
+              gsl_test_abs(sum, 0.0, tol,
+                           "%s deriv lmax=%zu mmax=%zu l=%zu, x=%f, sum=%.12e", desc, lmax, mmax, l, x, sum);
+            }
         }
-#endif
     }
 
-#if 0
-  /* test deriv2 array routines */
+  /* test deriv2 array routines against deriv */
   for (x = -1.0 + dx; x < 1.0 - dx; x += dx)
     {
-      s += gsl_sf_legendre_array(norm, lmax, x, p2);
-      s += gsl_sf_legendre_deriv2_array(norm, lmax, x, p, dp, d2p);
+      size_t i;
 
-      /* check p = p2 */
+      s += gsl_sf_alf_deriv_array(lmax, mmax, x, Plm, dPlm);
+      s += gsl_sf_alf_deriv2_array(lmax, mmax, x, Plm2, dPlm2, d2Plm);
+
+      /* check Plm == Plm2 and dPlm == dPlm2 */
       for (i = 0; i < nlm; ++i)
         {
-          if (fabs(p2[i]) < 1.0e3 * GSL_DBL_EPSILON)
-            gsl_test_abs(p[i], p2[i], 1.0e-10, "%s deriv2 i=%zu", desc, i);
+          if (fabs(Plm[i]) < 1.0e3 * GSL_DBL_EPSILON)
+            gsl_test_abs(Plm2[i], Plm[i], tol, "%s deriv2 0th i=%zu", desc, i);
           else
-            gsl_test_rel(p[i], p2[i], 1.0e-10, "%s deriv2 i=%zu", desc, i);
+            gsl_test_rel(Plm2[i], Plm[i], tol, "%s deriv2 0th i=%zu", desc, i);
+
+          if (fabs(dPlm[i]) < 1.0e3 * GSL_DBL_EPSILON)
+            gsl_test_abs(dPlm2[i], dPlm[i], tol, "%s deriv2 1st i=%zu", desc, i);
+          else
+            gsl_test_rel(dPlm2[i], dPlm[i], tol, "%s deriv2 1st i=%zu", desc, i);
         }
 
-      for (l = 0; l <= lmax; ++l)
+      if (lmax == mmax)
         {
-          double sum = test_legendre_sum_deriv(l, p, dp);
-          double sum2 = test_legendre_sum_deriv2(l, p, dp, d2p);
+          size_t l;
 
-          gsl_test_abs(sum, 0.0, 1.0e-10,
-                       "%s deriv2 l=%zu, x=%f, sum=%.12e", desc, l, x, sum);
-          gsl_test_abs(sum2, 0.0, 1.0e-6,
-                       "%s deriv2 l=%zu, x=%f, sum=%.12e", desc, l, x, sum2);
+          for (l = 0; l <= lmax; ++l)
+            {
+              double sum = test_alf_sum_deriv(lmax, l, Plm, dPlm);
+              double sum2 = test_alf_sum_deriv(lmax, l, Plm2, dPlm2);
+              double sum3 = test_alf_sum_deriv2(lmax, l, Plm2, dPlm2, d2Plm);
+
+              gsl_test_abs(sum, 0.0, tol,
+                           "%s deriv2 lmax=%zu mmax=%zu l=%zu, x=%f, sum=%.12e", desc, lmax, mmax, l, x, sum);
+              gsl_test_abs(sum2, 0.0, tol,
+                           "%s deriv2 lmax=%zu mmax=%zu l=%zu, x=%f, sum2=%.12e", desc, lmax, mmax, l, x, sum2);
+              gsl_test_abs(sum3, 0.0, tol,
+                           "%s deriv2 lmax=%zu mmax=%zu l=%zu, x=%f, sum3=%.12e", desc, lmax, mmax, l, x, sum3);
+            }
         }
     }
-
-#endif
 
   free(Plm);
   free(Plm2);
   free(dPlm);
+  free(dPlm2);
   free(d2Plm);
   free(Plm_theta);
   free(dPlm_theta);
@@ -558,7 +588,7 @@ test_alf_norm(const gsl_sf_alf_t norm, const size_t lmax,
   gsl_sf_alf_precompute(GSL_SF_ALF_SCHMIDT, lmax, mmax, flags, p_schmidt);
   gsl_sf_alf_precompute(norm, lmax, mmax, flags, p);
 
-  dx = test_legendre_dx(lmax);
+  dx = test_alf_dx(lmax);
   for (x = -1.0; x <= 1.0; x += dx)
     {
       s += gsl_sf_alf_array(lmax, mmax, x, p_schmidt);
@@ -623,7 +653,7 @@ test_alf_unnorm(const size_t lmax_orig, const size_t mmax_orig,
   gsl_sf_alf_precompute(GSL_SF_ALF_NONE, lmax, mmax, flags, p);
   gsl_sf_alf_precompute(GSL_SF_ALF_NONE, lmax, mmax, flags, p2);
 
-  dx = test_legendre_dx(lmax);
+  dx = test_alf_dx(lmax);
   for (x = -1.0 + dx; x < 1.0 - dx; x += dx)
     {
       gsl_sf_alf_deriv_array(lmax, mmax, x, p_schmidt, dp_schmidt);

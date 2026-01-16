@@ -363,7 +363,9 @@ at the end points $x = \pm 1$. For example,
 which is undefined at the end points. However, the alternative derivative with
 respect to $\theta$ is defined at the end points for all degrees and orders.
 
-\subsection{First Derivatives with Respect to $x$}
+\subsection{Derivatives with Respect to $x$}
+
+\subsubsection{First Derivatives (with respect to $x$)}
 
 \begin{subequations}
 \begin{alignat}{3}
@@ -376,7 +378,22 @@ respect to $\theta$ is defined at the end points for all degrees and orders.
 To initialize the recurrence, we need the quantities $T_0^0(x)$ and $d T_0^0(x) / dx$. The latter
 term is zero for all normalizations.
 
-\subsection{First Derivatives with Respect to $\theta$}
+\subsubsection{Second Derivatives (with respect to $x$)}
+
+\begin{subequations}
+\begin{alignat}{3}
+\frac{d^2}{dx^2} T_l^m(x) &= a_l^m \left( 2 \frac{d}{dx} T_{l-1}^m(x) + x \frac{d^2}{dx^2} T_{l-1}^m(x) \right) + b_l^m \frac{d^2}{dx^2} T_{l-2}^m(x), & \qquad l \geq m + 2 \\
+\frac{d^2}{dx^2} T_{l+1}^l(x) &= c_l \left( 2 \frac{d}{dx} T_l^l(x) + x \frac{d^2}{dx^2} T_l^l(x) \right), & \qquad l \geq 0 \\
+\frac{d^2}{dx^2} T_l^l(x) &= d_l \left( -\frac{1}{u^3} T_{l-1}^{l-1}(x) - 2 \frac{x}{u} \frac{d}{dx} T_{l-1}^{l-1}(x) + u \frac{d^2}{dx^2} T_{l-1}^{l-1}(x) \right), & \qquad l \geq 1
+\end{alignat}
+\end{subequations}
+
+To initialize the recurrence, we need the quantities $T_0^0(x)$, $d T_0^0(x) / dx$, and $d^2 T_0^0(x) / dx^2$. The latter
+two terms are zero for all normalizations.
+
+\subsection{Derivatives with Respect to $\theta$}
+
+\subsubsection{First Derivatives (with respect to $\theta$)}
 
 \begin{subequations}
 \begin{alignat}{3}
@@ -389,7 +406,9 @@ term is zero for all normalizations.
 To initialize the recurrence, we need the quantities $T_0^0(x)$ and $d T_0^0(x) / d\theta$. The latter
 term is zero for all normalizations.
 
-\subsection{Higher order Derivatives with Respect to $\theta$}
+\subsubsection{Second Derivatives (with respect to $\theta$)}
+
+\subsubsection{Higher order Derivatives (with respect to $\theta$)}
 
 \citet{bosch2000} derives the following recurrence relations for any order
 derivative with respect to $\theta$:
@@ -432,7 +451,7 @@ These factors are given in Table~\ref{tab:recurrence2} for the different normali
 \begin{table}[ht]
 \centering
 \scriptsize
-\caption{Coefficients of recursive derivative recurrence relations.}
+\caption{Coefficients of recursive derivative recurrence relations (with respect to $\theta$).}
 \begin{tabular}{@{}ccccc@{}}
 \toprule
 Normalization & Notation & $e_l$ & $f_l^m$ & $g_l^m$ \\
@@ -614,6 +633,31 @@ GSL & GNU Scientific Library \\
 \end{thebibliography}
 
 \appendix
+
+\section{First few Associated Legendre Functions}
+
+\begin{table}[ht]
+\centering
+\scriptsize
+\caption{First few associated Legendre functions and their derivatives without Condon-Shortley Phase (for testing purposes)}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+Degree $l$ & Order $m$ & $P_l^m$ & $S_l^m$ & $\partial_{\theta} S_l^m$ & $\partial_{\theta}^2 S_l^m$ \\
+\midrule
+0 & 0 & 1 & 1 & 0 & 0 \\
+1 & 0 & $\cos{\theta}$ & $\cos{\theta}$ & $-\sin{\theta}$ & $-\cos{\theta}$ \\
+1 & 1 & $\sin{\theta}$ & $\sin{\theta}$ & $\cos{\theta}$ & $-\sin{\theta}$ \\
+2 & 0 & $\frac{1}{2} \left( 3 \cos^2{\theta} - 1 \right)$ & $\frac{1}{2} \left( 3 \cos^2{\theta} - 1 \right)$ & $-3 \cos{\theta} \sin{\theta}$ & $-3 \left( \cos^2{\theta} - \sin^2{\theta} \right)$ \\
+2 & 1 & $3 \cos{\theta} \sin{\theta}$ & $\sqrt{3} \cos{\theta} \sin{\theta}$ & $\sqrt{3} \left( \cos^2{\theta} - \sin^2{\theta} \right)$ & $-4 \sqrt{3} \cos{\theta} \sin{\theta}$ \\
+2 & 2 & $3 \sin^2{\theta}$ & $\frac{\sqrt{3}}{2} \sin^2{\theta}$ & $\sqrt{3} \cos{\theta} \sin{\theta}$ & $\sqrt{3} \left( \cos^2{\theta} - \sin^2{\theta} \right)$ \\
+3 & 0 & $\frac{1}{2} \cos{\theta} \left( 5\cos^2{\theta} - 3 \right)$ & $\frac{1}{2} \cos{\theta} \left( 5\cos^2{\theta} - 3 \right)$ & $\frac{1}{2} \sin{\theta} \left( 3 - 15\cos^2{\theta} \right)$ & $\frac{3}{2} \cos{\theta} \left( 1 - 5\cos^2{\theta} + 10\sin^2{\theta} \right)$ \\
+3 & 1 & $-\frac{3}{2} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $-\frac{\sqrt{6}}{4} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $$ & $$ \\
+3 & 2 & $15 \cos{\theta} \sin^2{\theta}$ & $\frac{\sqrt{15}}{2} \cos{\theta} \sin^2{\theta}$ & $$ & $$ \\
+3 & 3 & $15 \sin^3{\theta}$ & $$ & $$ & $$ \\
+\bottomrule
+\end{tabular}
+\label{tab:ALF}
+\end{table}
 
 \section{Source Code for Benchmarks}
 \label{sec:benchsrc}

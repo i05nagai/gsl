@@ -264,6 +264,26 @@ code demonstrates how to access the array elements in order,
    to initialize :data:`result_array` with the multiplicative factors
    used in the recurrence relations.
 
+.. function:: int gsl_sf_alf_deriv2_array (const size_t lmax, const size_t mmax, const double x, double result_array[], double result_deriv_array[], double result_deriv2_array[])
+
+   This function calculates all associated Legendre
+   functions, their first derivatives, and their second
+   derivatives for :math:`0 \leq l \leq lmax`
+   and :math:`0 \leq m \leq \min{(l,mmax)}` for :math:`|x| < 1`.
+   The :math:`P_l^m(x)` values, their derivatives
+   :math:`dP_l^m(x)/dx`, and second derivatives
+   :math:`d^2 P_l^m(x) / dx^2` are stored in :data:`result_array`,
+   :data:`result_deriv_array`, and :data:`result_deriv2_array` respectively.
+
+   Note that for some orders :math:`m`, the derivatives have
+   singularities at the end points :math:`x = \pm 1`, and so this function only
+   accepts interior points as input, :math:`x \in (-1,1)`.
+
+   The function :func:`gsl_sf_alf_precompute` must be called first
+   using the same :data:`lmax` and :data:`mmax` inputs
+   to initialize :data:`result_array` with the multiplicative factors
+   used in the recurrence relations.
+
 .. function:: int gsl_sf_alf_vsh_array (const size_t lmax, const size_t mmax, const double x, double result_array[], double result_deriv_array[])
 
    In vector spherical harmonic expansions, it is often necessary to simultaneously
@@ -298,7 +318,17 @@ code demonstrates how to access the array elements in order,
    to initialize :data:`result_array` with the multiplicative factors
    used in the recurrence relations.
 
-.. function:: size_t gsl_sf_alf_nlm(const size_t lmax, const size_t mmax)
+.. function:: int gsl_sf_alf_theta_derivk_array (const size_t lmax, const double Plm[], const double input_array[], double output_array[])
+
+   This function computes derivatives (with respect to :math:`\theta`) of order :math:`k`,
+   given derivatives of order :math:`k-1`, using the algorithm of Bosch (2000). The
+   derivatives :math:`d^{k-1} P_l^m/d\theta^{k-1}` are provided in the array :data:`input_array`,
+   while the derivatives :math:`d^k P_l^m/d\theta^k` are stored in the array :data:`output_array`.
+   The array :data:`Plm` must also be provided and initialized by :func:`gsl_sf_alf_precompute` to
+   precompute the factors in the recurrence relations. The maximum degree :math:`L` is given in :data:`lmax`,
+   and for this algorithm to work, it is required that :math:`L = M`.
+
+.. function:: size_t gsl_sf_alf_nlm (const size_t lmax, const size_t mmax)
 
    This function returns the total number of associated Legendre
    functions :math:`P_l^m(x)` for a given :data:`lmax` and :data:`mmax`.
