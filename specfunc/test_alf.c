@@ -25,6 +25,7 @@
 #include "test_sf.h"
 
 #include "test_alf_e.c"
+#include "test_alf_theta_e.c"
 
 static double
 test_alf_dx(const size_t l)
@@ -129,7 +130,7 @@ test_value(const size_t lmax, const size_t mmax, const size_t l, const size_t m,
 
   vsnprintf(buf, sizeof(buf), desc, args);
 
-  gsl_test_rel(expected, p[idx], tol, "%s lmax=%zu mmax=%zu l=%zu m=%zu", buf, lmax, mmax, l, m);
+  gsl_test_rel(p[idx], expected, tol, "%s lmax=%zu mmax=%zu l=%zu m=%zu", buf, lmax, mmax, l, m);
 
   va_end(args);
 }
@@ -297,6 +298,54 @@ test_alf_schmidt3(const double tol, const size_t lmax, const size_t mmax, const 
   return GSL_SUCCESS;
 }
 
+/* test gsl_sf_alf_vsh_array function, this function requires sin(theta) != 0 */
+static int
+test_alf_schmidt4(const double tol, const size_t lmax, const size_t mmax, const double theta,
+                  const size_t expected_L, const double * expected_S, const double * expected_DS,
+                  const double * expected_DDS, const char * desc)
+{
+  const double cost = cos(theta);
+  const double sint = sin(theta);
+  const size_t plm_size = gsl_sf_alf_array_size(lmax, mmax);
+  const size_t dplm_size = gsl_sf_alf_nlm(lmax, mmax);
+  double * Plm = malloc(plm_size * sizeof(double));
+  double * dPlm = malloc(dplm_size * sizeof(double));
+  double * d2Plm = malloc(dplm_size * sizeof(double));
+  size_t l, m;
+
+  /* precompute ALF factors */
+  gsl_sf_alf_precompute(GSL_SF_ALF_SCHMIDT, lmax, mmax, 0, Plm);
+
+  /* compute ALFs */
+  gsl_sf_alf_vsh_array(lmax, mmax, cost, Plm, dPlm);
+
+  if (lmax == mmax)
+    gsl_sf_alf_theta_derivk_array(lmax, Plm, dPlm, d2Plm);
+
+  for (l = 0; l <= GSL_MIN(lmax, expected_L); ++l)
+    {
+      for (m = 0; m <= GSL_MIN(l, mmax); ++m)
+        {
+          size_t idx = gsl_sf_alf_array_index(l, m, expected_L);
+
+          test_value(lmax, mmax, l, m, Plm,
+                     (m == 0) ? expected_S[idx] : expected_S[idx]/sint,
+                     tol, "[schmidt4] 0th %s th=%g", desc, theta);
+
+          test_value(lmax, mmax, l, m, dPlm, expected_DS[idx], tol, "[schmidt4] 1st %s th=%g", desc, theta);
+
+          if (lmax == mmax)
+            test_value(lmax, mmax, l, m, d2Plm, expected_DDS[idx], tol, "[schmidt4] 2nd %s th=%g", desc, theta);
+        }
+    }
+
+  free(Plm);
+  free(dPlm);
+  free(d2Plm);
+
+  return GSL_SUCCESS;
+}
+
 static int
 test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const char *desc)
 {
@@ -343,6 +392,14 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   test_alf_schmidt3(tol, lmax, mmax,  0.6,  expected_L_MNB, expected_S_06,  expected_DS_06,  expected_DDS_06,  desc);
   test_alf_schmidt3(tol, lmax, mmax,  0.75, expected_L_MNB, expected_S_075, expected_DS_075, expected_DDS_075, desc);
 
+  /* test gsl_sf_alf_vsh_array and gsl_sf_alf_theta_derivk_array */
+  test_alf_schmidt4(tol, lmax, mmax, 0.1,  expected_t_L_MNB, expected_t_S_01,  expected_t_DS_01,  expected_t_DDS_01,  desc);
+  test_alf_schmidt4(tol, lmax, mmax, 0.49, expected_t_L_MNB, expected_t_S_049, expected_t_DS_049, expected_t_DDS_049, desc);
+  test_alf_schmidt4(tol, lmax, mmax, 1.2,  expected_t_L_MNB, expected_t_S_12,  expected_t_DS_12,  expected_t_DDS_12,  desc);
+  test_alf_schmidt4(tol, lmax, mmax, 2.01, expected_t_L_MNB, expected_t_S_201, expected_t_DS_201, expected_t_DDS_201, desc);
+  test_alf_schmidt4(tol, lmax, mmax, 2.99, expected_t_L_MNB, expected_t_S_299, expected_t_DS_299, expected_t_DDS_299, desc);
+  test_alf_schmidt4(tol, lmax, mmax, 3.10, expected_t_L_MNB, expected_t_S_310, expected_t_DS_310, expected_t_DDS_310, desc);
+
   gsl_sf_alf_precompute(GSL_SF_ALF_SCHMIDT, lmax, mmax, 0, Plm);
 
   x = 0.1;
@@ -350,45 +407,6 @@ test_alf_schmidt(const size_t lmax, const size_t mmax, const size_t flags, const
   test_value(lmax, mmax, 2700, 500, Plm, -7.421910573369699e-03, tol, "%s x=%g", desc, x);
   test_value(lmax, mmax, 2700, 2500, Plm, 2.717612388452281e-02, tol, "%s x=%g", desc, x);
   test_value(lmax, mmax, 2700, 2700, Plm, 1.887509917445211e-07, tol, "%s x=%g", desc, x);
-
-  x = 0.35;
-  gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm_theta);
-  test_value(lmax, mmax, 0, 0, Plm,   1.000000000000000, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 1, 0, Plm,   0.350000000000000, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 1, 1, Plm,   1.000000000000000, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 0, Plm,  -0.316250000000000, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 1, Plm,   0.606217782649107, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 2, Plm,   0.811249036979398, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 0, Plm,  -0.417812500000000, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 1, Plm,  -0.237294318832120, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 2, Plm,   0.634902797678511, tol, "%s theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 3, Plm,   0.693724661699438, tol, "%s theta x=%g", desc, x);
-
-  test_value(lmax, mmax, 0, 0, dPlm_theta,  0.000000000000000, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 1, 0, dPlm_theta, -0.936749699759760, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 1, 1, dPlm_theta,  0.350000000000000, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 0, dPlm_theta, -0.983587184747748, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 1, dPlm_theta, -1.30769835971450,  tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 2, 2, dPlm_theta,  0.567874325885578, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 0, dPlm_theta,  0.544485762985360, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 1, dPlm_theta, -1.963801854721950, tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 2, dPlm_theta, -1.14736005580474,  tol, "%s deriv theta x=%g", desc, x);
-  test_value(lmax, mmax, 3, 3, dPlm_theta,  0.728410894784410, tol, "%s deriv theta x=%g", desc, x);
-
-  if (lmax == mmax)
-    {
-      gsl_sf_alf_theta_derivk_array(lmax, Plm, dPlm_theta, d2Plm_theta);
-      test_value(lmax, mmax, 0, 0, d2Plm_theta,  0.000000000000000, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 1, 0, d2Plm_theta, -0.350000000000000, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 1, 1, d2Plm_theta, -0.936749699759760, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 2, 0, d2Plm_theta,  2.265000000000000, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 2, 1, d2Plm_theta, -2.271497303542314, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 2, 2, d2Plm_theta, -1.307698359714502, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 3, 0, d2Plm_theta,  4.810312500000000, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 3, 1, d2Plm_theta,  3.147847827844545, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 3, 2, d2Plm_theta, -3.997160874745192, tol, "%s derivk k=2 theta x=%g", desc, x);
-      test_value(lmax, mmax, 3, 3, d2Plm_theta, -1.405223343986419, tol, "%s derivk k=2 theta x=%g", desc, x);
-    }
 
   x = 1.0;
   gsl_sf_alf_vsh_array(lmax, mmax, x, Plm, dPlm_theta);
