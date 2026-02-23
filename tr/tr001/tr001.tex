@@ -638,7 +638,7 @@ GSL & GNU Scientific Library \\
 
 \begin{table}[ht]
 \centering
-\scriptsize
+\tiny
 \caption{First few associated Legendre functions and their derivatives without Condon-Shortley Phase (for testing purposes)}
 \begin{tabular}{@{}cccccc@{}}
 \toprule
@@ -651,9 +651,9 @@ Degree $l$ & Order $m$ & $P_l^m$ & $S_l^m$ & $\partial_{\theta} S_l^m$ & $\parti
 2 & 1 & $3 \cos{\theta} \sin{\theta}$ & $\sqrt{3} \cos{\theta} \sin{\theta}$ & $\sqrt{3} \left( \cos^2{\theta} - \sin^2{\theta} \right)$ & $-4 \sqrt{3} \cos{\theta} \sin{\theta}$ \\
 2 & 2 & $3 \sin^2{\theta}$ & $\frac{\sqrt{3}}{2} \sin^2{\theta}$ & $\sqrt{3} \cos{\theta} \sin{\theta}$ & $\sqrt{3} \left( \cos^2{\theta} - \sin^2{\theta} \right)$ \\
 3 & 0 & $\frac{1}{2} \cos{\theta} \left( 5\cos^2{\theta} - 3 \right)$ & $\frac{1}{2} \cos{\theta} \left( 5\cos^2{\theta} - 3 \right)$ & $\frac{1}{2} \sin{\theta} \left( 3 - 15\cos^2{\theta} \right)$ & $\frac{3}{2} \cos{\theta} \left( 1 - 5\cos^2{\theta} + 10\sin^2{\theta} \right)$ \\
-3 & 1 & $-\frac{3}{2} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $-\frac{\sqrt{6}}{4} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $$ & $$ \\
-3 & 2 & $15 \cos{\theta} \sin^2{\theta}$ & $\frac{\sqrt{15}}{2} \cos{\theta} \sin^2{\theta}$ & $$ & $$ \\
-3 & 3 & $15 \sin^3{\theta}$ & $\frac{15}{6 \sqrt{10}} \sin^3{\theta}$ & $$ & $$ \\
+3 & 1 & $-\frac{3}{2} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $-\frac{\sqrt{6}}{4} \sin{\theta} \left( 1 - 5\cos^2{\theta} \right)$ & $-\sqrt{\frac{3}{2}} \cos{\theta} \left[ \frac{1}{2} \left(1 - 5\cos^2{\theta}\right) + 5\sin^2{\theta} \right]$ & $-\frac{1}{4} \sqrt{\frac{3}{2}} \sin{\theta} \left[ 23 + 45\left(2\cos^2{\theta} - 1 \right)\right]$ \\
+3 & 2 & $15 \cos{\theta} \sin^2{\theta}$ & $\frac{\sqrt{15}}{2} \cos{\theta} \sin^2{\theta}$ & $\frac{\sqrt{15}}{4} \sin{\theta} \left[ 1 + 3 \left( 2\cos^2{\theta} - 1\right)\right]$ & $-\frac{\sqrt{15}}{8} \left[ \cos{\theta} - 9 \left( 4\cos^3{\theta} - 3\cos{\theta}\right)\right]$ \\
+3 & 3 & $15 \sin^3{\theta}$ & $\frac{15}{6 \sqrt{10}} \sin^3{\theta}$ & $\frac{3}{2} \sqrt{\frac{5}{2}} \cos{\theta} \sin^2{\theta}$ & $\frac{3}{4} \sqrt{\frac{5}{2}} \sin{\theta} \left[ 1 + 3 \left( 2\cos^2{\theta} - 1\right)\right]$ \\
 \bottomrule
 \end{tabular}
 \label{tab:ALF}

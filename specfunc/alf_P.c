@@ -1191,7 +1191,9 @@ gsl_sf_alf_theta_deriv2_array(const gsl_sf_alf_t norm, const size_t lmax, const 
 
   return GSL_SUCCESS;
 }
+#endif
 
+#if 0
 /*
 gsl_sf_alf_theta_derivk_array()
   Compute the kth derivative of Plm(x) with respect to theta
@@ -1370,71 +1372,4 @@ gsl_sf_alf_theta_derivk_array(const gsl_sf_alf_t norm,
       return GSL_SUCCESS;
     }
 }
-#endif
-
-#if 0
-
-/*
-gsl_sf_alf_deriv2_alt_arrayx()
-  Compute array of associated Legendre functions and their
-first and second derivatives at a given point x
-
-Inputs: norm                - ALF normalization
-        lmax                - maximum degree
-        x                   - input point, cos(theta)
-        result_array        - (input/output) output array of ALFs Plm(x)
-        result_deriv_array  - (output) d/dx Plm(x), length nlm
-        result_deriv2_array - (output) d^2/dx^2 Plm(x), length nlm
-
-Notes:
-1) result_array must be of length returned by gsl_sf_alf_array_size()
-and be initialized by gsl_sf_alf_precompute()
-
-2) result_deriv_array and result_deriv2_array must be of length at least nlm
-
-3) output arrays are indexed by gsl_sf_alf_array_index(l,m)
-*/
-
-int
-gsl_sf_alf_deriv2_arrayx(const gsl_sf_alf_t norm,
-                              const size_t lmax,
-                              const double x,
-                              double result_array[],
-                              double result_deriv_array[],
-                              double result_deriv2_array[])
-{
-  if (x == -1.0 || x == 1.0)
-    {
-      GSL_ERROR ("x cannot equal -1 or +1 for derivative computation", GSL_EDOM);
-    }
-  else
-    {
-      int status;
-      const size_t nlm = gsl_sf_alf_nlm(lmax);
-      const double u = sqrt((1.0 - x) * (1.0 + x)); /* sin(theta) */
-      const double uinv = 1.0 / u;
-      const double uinv2 = uinv * uinv;
-      size_t i;
-
-      /* compute Plm, d/dtheta Plm and d^2/dtheta^2 Plm */
-      status = gsl_sf_alf_deriv2_alt_arrayx(norm, lmax, x,
-                                                 result_array,
-                                                 result_deriv_array,
-                                                 result_deriv2_array);
-      if (status)
-        return status;
-
-      for (i = 0; i < nlm; ++i)
-        {
-          /* d/dx Plm = -1/sin(theta) d/dtheta Plm */
-          result_deriv_array[i] *= -uinv;
-
-          /* d^2/dx^2 Plm = 1/sin^2(theta) [ d^2/dtheta^2 Plm + x d/dx Plm ] */
-          result_deriv2_array[i] = uinv2 * (result_deriv2_array[i] + x * result_deriv_array[i]);
-        }
-
-      return GSL_SUCCESS;
-    }
-}
-
 #endif
