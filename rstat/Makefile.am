@@ -1,10 +1,11 @@
 noinst_LTLIBRARIES = libgslrstat.la
 
-pkginclude_HEADERS = gsl_rstat.h
+pkginclude_HEADERS = gsl_rstat.h gsl_wrstat.h
+noinst_HEADERS = test_rstat.c test_wrstat.c
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-libgslrstat_la_SOURCES = rstat.c rquantile.c
+libgslrstat_la_SOURCES = rstat.c rquantile.c wrstat.c
 
 check_PROGRAMS = test
 TESTS = $(check_PROGRAMS)
