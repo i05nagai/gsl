@@ -1,5 +1,8 @@
 * What is new in gsl-2.9:
 
+** add functions:
+   - gsl_matrix_axpby
+
 ** new interface (gsl_sf_alf) for associated Legendre functions
 
 ** bug fix in collocation matrix for order-1 interpolating B-splines

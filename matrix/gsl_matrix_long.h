@@ -252,6 +252,7 @@ int gsl_matrix_long_scale_rows (gsl_matrix_long * a, const gsl_vector_long * x);
 int gsl_matrix_long_scale_columns (gsl_matrix_long * a, const gsl_vector_long * x);
 int gsl_matrix_long_add_constant (gsl_matrix_long * a, const long x);
 int gsl_matrix_long_add_diagonal (gsl_matrix_long * a, const long x);
+int gsl_matrix_long_axpby (const long alpha, const gsl_matrix_long * X, const long beta, gsl_matrix_long * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

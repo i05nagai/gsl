@@ -653,6 +653,27 @@ FUNCTION (test, ops) (const size_t M, const size_t N)
     gsl_test (status, NAME (gsl_matrix) "_add_diagonal");
   }
 
+  FUNCTION(gsl_matrix, memcpy) (m, a);
+  FUNCTION(gsl_matrix, axpby) ((ATOMIC) 2, b, (ATOMIC) 3, m);
+
+  {
+    int status = 0;
+
+    for (i = 0; i < M; i++)
+      {
+        for (j = 0; j < N; j++)
+          {
+            BASE r = FUNCTION(gsl_matrix,get) (m,i,j);
+            BASE x = FUNCTION(gsl_matrix,get) (a,i,j);
+            BASE y = FUNCTION(gsl_matrix,get) (b,i,j);
+            BASE z = (ATOMIC)2*y + (ATOMIC)3*x;
+            if (ABS(r - z) > 2 * GSL_FLT_EPSILON * ABS(z))
+              status = 1;
+          }
+      }
+    gsl_test (status, NAME (gsl_matrix) "_axpby");
+  }
+
 
   FUNCTION(gsl_matrix, swap) (a, b);
 

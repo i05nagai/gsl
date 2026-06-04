@@ -246,6 +246,7 @@ int gsl_matrix_complex_float_scale_columns (gsl_matrix_complex_float * a, const 
 int gsl_matrix_complex_float_add_constant (gsl_matrix_complex_float * a, const gsl_complex_float x);
 int gsl_matrix_complex_float_add_diagonal (gsl_matrix_complex_float * a, const gsl_complex_float x);
 int gsl_matrix_complex_float_conjugate (gsl_matrix_complex_float * a);
+int gsl_matrix_complex_float_axpby (const gsl_complex_float alpha, const gsl_matrix_complex_float * X, const gsl_complex_float beta, gsl_matrix_complex_float * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

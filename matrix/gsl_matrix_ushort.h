@@ -252,6 +252,7 @@ int gsl_matrix_ushort_scale_rows (gsl_matrix_ushort * a, const gsl_vector_ushort
 int gsl_matrix_ushort_scale_columns (gsl_matrix_ushort * a, const gsl_vector_ushort * x);
 int gsl_matrix_ushort_add_constant (gsl_matrix_ushort * a, const unsigned short x);
 int gsl_matrix_ushort_add_diagonal (gsl_matrix_ushort * a, const unsigned short x);
+int gsl_matrix_ushort_axpby (const unsigned short alpha, const gsl_matrix_ushort * X, const unsigned short beta, gsl_matrix_ushort * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

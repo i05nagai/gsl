@@ -246,6 +246,7 @@ int gsl_matrix_complex_scale_columns (gsl_matrix_complex * a, const gsl_vector_c
 int gsl_matrix_complex_add_constant (gsl_matrix_complex * a, const gsl_complex x);
 int gsl_matrix_complex_add_diagonal (gsl_matrix_complex * a, const gsl_complex x);
 int gsl_matrix_complex_conjugate (gsl_matrix_complex * a);
+int gsl_matrix_complex_axpby (const gsl_complex alpha, const gsl_matrix_complex * X, const gsl_complex beta, gsl_matrix_complex * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

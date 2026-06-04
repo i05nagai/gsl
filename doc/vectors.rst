@@ -1503,6 +1503,17 @@ The following operations are defined for real and complex matrices.
    matrix :data:`a`.  The result :math:`a(i,j) \leftarrow a(i,j) + x` is
    stored in :data:`a`.
 
+.. function:: int gsl_matrix_add_diagonal (gsl_matrix * a, const double x)
+
+   This function adds the constant value :data:`x` to the diagonal elements of the
+   matrix :data:`a`.  The result :math:`a(i,i) \leftarrow a(i,i) + x` is
+   stored in :data:`a`.
+
+.. function:: int gsl_matrix_axpby (const double alpha, const gsl_matrix * x, const double beta, gsl_matrix * y)
+
+   This function performs the operation :math:`y \leftarrow \alpha x + \beta y`. The
+   matrices :data:`x` and :data:`y` must have the same size.
+
 .. function:: int gsl_matrix_complex_conjugate (gsl_matrix * a)
 
    This function replaces each element of the matrix :data:`a` with its

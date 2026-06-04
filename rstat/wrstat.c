@@ -17,6 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+/*
+ * This module uses the method described in the following paper,
+ *
+ * [1] Pebay, Terriberry, Kolla, and Bennett, "Numerically stable,
+ *     scalable formulas for parallel and online computation of
+ *     higher-order multivariate central moments with arbitrary weights",
+ *     Comput. Stat., 31, pg. 1305-1325, 2016.
+ */
+
 #include <config.h>
 #include <stdlib.h>
 #include <math.h>

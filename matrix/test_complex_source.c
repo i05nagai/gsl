@@ -865,6 +865,34 @@ FUNCTION (test, ops) (const size_t P, const size_t Q)
   }
 
   {
+    BASE alpha, beta;
+    GSL_SET_COMPLEX(&alpha, 1.0, 2.0);
+    GSL_SET_COMPLEX(&beta,  3.0, 4.0);
+
+    FUNCTION (gsl_matrix, memcpy) (m, a);
+    FUNCTION (gsl_matrix, axpby) (alpha, b, beta, m);
+
+    k = 0;
+    status = 0;
+
+    for (i = 0; i < P; i++)
+      {
+        for (j = 0; j < Q; j++)
+          {
+            ATOMIC real = (ATOMIC) (-2*(ATOMIC)k - 75);
+            ATOMIC imag = (ATOMIC) (10*(ATOMIC)k + 60);
+            BASE z = FUNCTION (gsl_matrix, get) (m, i, j);
+            if (GSL_REAL (z) != real || GSL_IMAG (z) != imag)
+              {
+                status = 1;
+              }
+            k++;
+          }
+      }
+    gsl_test (status, NAME (gsl_matrix) "_axpby");
+  }
+
+  {
     FUNCTION (gsl_matrix, swap) (a, b);
 
     k = 0;

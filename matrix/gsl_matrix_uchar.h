@@ -252,6 +252,7 @@ int gsl_matrix_uchar_scale_rows (gsl_matrix_uchar * a, const gsl_vector_uchar * 
 int gsl_matrix_uchar_scale_columns (gsl_matrix_uchar * a, const gsl_vector_uchar * x);
 int gsl_matrix_uchar_add_constant (gsl_matrix_uchar * a, const unsigned char x);
 int gsl_matrix_uchar_add_diagonal (gsl_matrix_uchar * a, const unsigned char x);
+int gsl_matrix_uchar_axpby (const unsigned char alpha, const gsl_matrix_uchar * X, const unsigned char beta, gsl_matrix_uchar * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

@@ -305,3 +305,31 @@ FUNCTION (gsl_matrix, conjugate) (TYPE (gsl_matrix) * a)
 
   return GSL_SUCCESS;
 }
+
+int
+FUNCTION (gsl_matrix, axpby) (const BASE alpha,
+                              const TYPE (gsl_matrix) * X,
+                              const BASE beta,
+                              TYPE (gsl_matrix) * Y)
+{
+  const size_t M = X->size1;
+
+  if (M != Y->size1 || X->size2 != Y->size2)
+    {
+      GSL_ERROR ("X and Y must have same dimensions", GSL_EBADLEN);
+    }
+  else
+    {
+      size_t i;
+
+      for (i = 0; i < M; ++i)
+        {
+          VIEW (gsl_vector, const_view) Xi = FUNCTION (gsl_matrix, const_row) (X, i);
+          VIEW (gsl_vector, view) Yi = FUNCTION (gsl_matrix, row) (Y, i);
+
+          FUNCTION (gsl_vector, axpby) (alpha, &Xi.vector, beta, &Yi.vector);
+        }
+
+      return GSL_SUCCESS;
+    }
+}

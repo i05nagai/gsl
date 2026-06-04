@@ -252,6 +252,7 @@ int gsl_matrix_char_scale_rows (gsl_matrix_char * a, const gsl_vector_char * x);
 int gsl_matrix_char_scale_columns (gsl_matrix_char * a, const gsl_vector_char * x);
 int gsl_matrix_char_add_constant (gsl_matrix_char * a, const char x);
 int gsl_matrix_char_add_diagonal (gsl_matrix_char * a, const char x);
+int gsl_matrix_char_axpby (const char alpha, const gsl_matrix_char * X, const char beta, gsl_matrix_char * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */

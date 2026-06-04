@@ -252,6 +252,7 @@ int gsl_matrix_float_scale_rows (gsl_matrix_float * a, const gsl_vector_float * 
 int gsl_matrix_float_scale_columns (gsl_matrix_float * a, const gsl_vector_float * x);
 int gsl_matrix_float_add_constant (gsl_matrix_float * a, const float x);
 int gsl_matrix_float_add_diagonal (gsl_matrix_float * a, const float x);
+int gsl_matrix_float_axpby (const float alpha, const gsl_matrix_float * X, const float beta, gsl_matrix_float * Y);
 
 /***********************************************************************/
 /* The functions below are obsolete                                    */
